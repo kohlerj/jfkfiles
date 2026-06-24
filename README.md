@@ -10,10 +10,10 @@ toolchain (embedded, python, node, …) lives in a **devcontainer**. That is wha
 makes this immutable-OS-friendly.
 
 ```
-Host (macOS)        home/Brewfile          + scripts/macos-*.sh
-Host (Fedora Atomic) image/Containerfile    shell tools baked into a custom base image
-Dotfiles (chezmoi)  home/dot_*             portable via {{ .chezmoi.os }} guards
-Dev (devcontainers) devcontainer/          toolchains + dotfiles injected (Linux: 100% of dev)
+Host (macOS)         home/Brewfile         + scripts/macos-*.sh
+Host (Fedora Atomic) image/Containerfile   shell tools baked into a custom base image
+Dotfiles (chezmoi)   home/dot_*            portable via {{ .chezmoi.os }} guards
+Dev (devcontainers)  (planned)             toolchains + dotfiles injected (Linux: 100% of dev)
 ```
 
 ## Layout
@@ -22,14 +22,15 @@ Dev (devcontainers) devcontainer/          toolchains + dotfiles injected (Linux
 | `home/` | chezmoi-managed `$HOME` tree (`.chezmoiroot` points here) |
 | `home/Brewfile` | **your tool list** — formulae, casks, VS Code ext, npm globals |
 | `home/dot_zshrc.tmpl`, `dot_gitconfig.tmpl` | templated dotfiles |
-| `home/.chezmoiscripts/` | `run_onchange` → `brew bundle` (macOS) / set zsh login shell (Linux) |
+| `home/.chezmoi.toml.tmpl` | `chezmoi init` prompts (name/email) → template data |
+| `home/.chezmoiignore` | repo/dev artifacts chezmoi must not apply to `$HOME` |
+| `home/.chezmoiscripts/` | install oh-my-zsh (once) → `brew bundle` on Brewfile change (macOS) / set zsh login shell (Linux) |
 | `image/Containerfile` | custom Fedora Sway Atomic image — host shell tools baked in |
-| `packages/packages.yaml` | macOS→Linux package map (immutable-OS port) |
+| `image/README.md` | how to build, publish, and rebase onto the custom image |
+| `.github/workflows/build-image.yml` | CI: rebuild + push the image (push to `image/**`, manual, weekly) |
 | `scripts/bootstrap.sh` | one-command new-machine setup |
 | `scripts/macos-defaults.sh` | curated, idempotent macOS settings |
-| `scripts/macos-export-domains.sh` | snapshot app prefs to `packages/macos/` |
-| `devcontainer/embedded/` | ARM/Pico devcontainer (USB passthrough) |
-| `docs/devcontainers-usb.md` | USB-on-macOS reality + workarounds |
+| `scripts/macos-export-domains.sh` | snapshot app prefs to `packages/macos/` (gitignored) |
 
 ## First-time publish (from this dev repo)
 ```sh
