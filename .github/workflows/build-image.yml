@@ -1,0 +1,39 @@
+name: build-image
+
+# Rebuilds the custom Fedora Sway Atomic image so it tracks upstream security
+# updates. Push to main, manual dispatch, or weekly.
+on:
+  push:
+    branches: [main]
+    paths: ["image/**", ".github/workflows/build-image.yml"]
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
+
+env:
+  IMAGE: ghcr.io/${{ github.repository_owner }}/sway-atomic
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          podman build \
+            --build-arg ARCH=x86_64 \
+            -t "${IMAGE}:latest" \
+            -t "${IMAGE}:${GITHUB_SHA::7}" \
+            image/
+
+      - name: Log in to ghcr.io
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | podman login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Push
+        run: |
+          podman push "${IMAGE}:latest"
+          podman push "${IMAGE}:${GITHUB_SHA::7}"
