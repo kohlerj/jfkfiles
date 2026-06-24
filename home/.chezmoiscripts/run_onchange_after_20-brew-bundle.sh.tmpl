@@ -1,0 +1,17 @@
+#!/bin/sh
+# Managed by chezmoi. Runs on `chezmoi apply` when the Brewfile changes.
+# Brewfile hash: {{ include "Brewfile" | sha256sum }}
+{{ if eq .chezmoi.os "darwin" -}}
+set -eu
+
+if ! command -v brew >/dev/null 2>&1; then
+    echo "Homebrew not found. Install it first: https://brew.sh" >&2
+    exit 0
+fi
+
+echo "==> brew bundle (installing from ~/Brewfile)"
+brew bundle --file="$HOME/Brewfile"
+{{ else -}}
+# Non-Darwin host: see packages/ for the Linux/immutable-OS package map.
+echo "Skipping Brewfile install on {{ .chezmoi.os }}."
+{{ end -}}

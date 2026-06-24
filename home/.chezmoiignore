@@ -1,0 +1,4 @@
+# chezmoi ignores these in $HOME (they are repo/dev artifacts, not dotfiles).
+README.md
+LICENSE
+.git

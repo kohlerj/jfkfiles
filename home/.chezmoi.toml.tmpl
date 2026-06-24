@@ -1,0 +1,8 @@
+{{/* Prompts on `chezmoi init`; powers dot_gitconfig.tmpl and others.
+     Defaults prefilled so `chezmoi init --promptDefaults` is one keypress. */ -}}
+{{- $name := promptStringOnce . "name" "Full name" "Julien Kohler" -}}
+{{- $email := promptStringOnce . "email" "Git email" "kohlerj@users.noreply.github.com" -}}
+
+[data]
+    name = {{ $name | quote }}
+    email = {{ $email | quote }}

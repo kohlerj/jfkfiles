@@ -1,0 +1,13 @@
+[user]
+	name = {{ .name | quote }}
+	email = {{ .email | quote }}
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[pull]
+	ff = only
+	rebase = false
+[init]
+	defaultBranch = main
