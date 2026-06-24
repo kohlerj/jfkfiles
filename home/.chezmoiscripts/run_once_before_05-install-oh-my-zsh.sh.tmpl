@@ -1,0 +1,9 @@
+#!/bin/sh
+# Install oh-my-zsh if missing (needed by dot_zshrc on any OS).
+# KEEP_ZSHRC=yes so it never overwrites the chezmoi-managed ~/.zshrc.
+set -eu
+if [ ! -d "$HOME/.oh-my-zsh" ]; then
+    echo "==> Installing oh-my-zsh"
+    RUNZSH=no CHSH=no KEEP_ZSHRC=yes \
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+fi

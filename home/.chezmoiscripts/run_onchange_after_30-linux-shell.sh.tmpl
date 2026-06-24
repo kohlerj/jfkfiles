@@ -1,0 +1,26 @@
+#!/bin/sh
+# Linux (Fedora Sway Atomic): set zsh as the login shell.
+# Shell TOOLS are baked into the custom base image (see image/Containerfile),
+# so nothing is installed here — chezmoi only manages config + the login shell.
+# Re-run trigger (bump to force): v2
+{{ if eq .chezmoi.os "linux" -}}
+set -eu
+
+ZSH_BIN="$(command -v zsh || true)"
+if [ -z "$ZSH_BIN" ]; then
+    echo "zsh not found. Rebase onto the custom image (image/Containerfile) first," >&2
+    echo "or layer it: rpm-ostree install zsh && reboot." >&2
+    exit 0
+fi
+
+grep -qx "$ZSH_BIN" /etc/shells 2>/dev/null || \
+    echo "$ZSH_BIN" | sudo tee -a /etc/shells >/dev/null 2>&1 || true
+
+if [ "${SHELL:-}" != "$ZSH_BIN" ]; then
+    echo "==> Setting default shell to $ZSH_BIN"
+    chsh -s "$ZSH_BIN" 2>/dev/null || sudo chsh -s "$ZSH_BIN" "$USER" 2>/dev/null || \
+        echo "   (run manually: chsh -s $ZSH_BIN)"
+fi
+{{ else -}}
+echo "macOS: shell tools handled by the Brewfile script; skipping."
+{{ end -}}

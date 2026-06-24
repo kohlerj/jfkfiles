@@ -1,0 +1,44 @@
+# Custom Fedora Sway Atomic image — shell tools baked into the base image.
+#
+# WHY: on an immutable host, the login shell + its tools must exist on the host
+# itself (devcontainers cover DEV tooling, not the host shell). The declarative,
+# "based on config" way to do that is to bake them into a custom base image and
+# rebase onto it — NOT `rpm-ostree install` at runtime.
+#
+# Build + rebase: see image/README.md
+#
+# Pin the tag to your installed Fedora version (e.g. :41, :42).
+FROM quay.io/fedora-ostree-desktops/sway-atomic:41
+
+ARG ARCH=x86_64
+
+# --- Shell + CLI tools (same set as the macOS Brewfile, Fedora names) --------
+# fd-find -> `fd`, bat -> `bat`. These are in Fedora repos.
+RUN rpm-ostree install \
+        zsh \
+        eza \
+        fzf \
+        zoxide \
+        tmux \
+        bat \
+        fd-find \
+        gh \
+        neovim \
+        btop \
+        htop \
+        ncdu \
+        wget \
+        git \
+        git-lfs
+
+# --- starship (not in Fedora base repos) -> static binary into /usr/bin ------
+RUN curl -fsSL "https://github.com/starship/starship/releases/latest/download/starship-${ARCH}-unknown-linux-gnu.tar.gz" \
+        | tar xz -C /usr/bin starship
+
+# --- devpod: dev work is 100% devcontainers; podman already ships in the image
+RUN curl -fsSL -o /usr/bin/devpod \
+        "https://github.com/loft-sh/devpod/releases/latest/download/devpod-linux-$( [ "$ARCH" = aarch64 ] && echo arm64 || echo amd64 )" \
+    && chmod +x /usr/bin/devpod
+
+# Clean up layered metadata so the image stays lean
+RUN rpm-ostree cleanup -m && ostree container commit

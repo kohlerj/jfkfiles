@@ -31,7 +31,7 @@ export FZF_CTRL_T_OPTS="--preview '$_FZF_PREVIEW_CMD'"
 # Plugins ('macos' only loaded on Darwin so config stays Linux-portable)
 plugins=(git python pyenv virtualenv dotenv zoxide fzf colorize tmux eza{{ if eq .chezmoi.os "darwin" }} macos{{ end }})
 
-source $ZSH/oh-my-zsh.sh
+[ -f "$ZSH/oh-my-zsh.sh" ] && source "$ZSH/oh-my-zsh.sh"
 
 # Aliases
 alias zshconfig="$EDITOR ~/.zshrc"
@@ -46,11 +46,9 @@ export PATH="$HOME/.local/bin:$PATH"
 [ -d "$HOME/Sources/pico/pico-sdk" ] && export PICO_SDK_PATH="$HOME/Sources/pico/pico-sdk"
 {{ end -}}
 
-# Brew shellenv (path differs on Apple Silicon vs Linuxbrew)
+# Brew shellenv (macOS / Apple Silicon)
 {{ if eq .chezmoi.os "darwin" -}}
 [ -x /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
-{{ else -}}
-[ -x /home/linuxbrew/.linuxbrew/bin/brew ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 {{ end -}}
 
-eval "$(starship init zsh)"
+command -v starship >/dev/null 2>&1 && eval "$(starship init zsh)"
