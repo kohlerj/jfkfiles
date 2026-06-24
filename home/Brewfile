@@ -50,6 +50,8 @@ brew "joe"
 brew "llvm"
 # List USB devices, just like the Linux lsusb command
 brew "lsusb"
+# Mackup
+brew "mackup"
 # Menu-driven communications program
 brew "minicom"
 # Simple tool to make locally trusted development certificates
