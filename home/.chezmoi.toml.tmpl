@@ -3,6 +3,28 @@
 {{- $name := promptStringOnce . "name" "Full name" "Julien Kohler" -}}
 {{- $email := promptStringOnce . "email" "Git email" "kohlerj@users.noreply.github.com" -}}
 
+{{/* Detect Linux variant so scripts can branch without re-reading /etc/os-release.
+     Values: "fedora-atomic" | "alpine" | "debian" | "linux" (generic) | "" (macOS)
+     - fedora-atomic : Fedora with rpm-ostree present (immutable root → tools baked in OCI image)
+     - alpine        : Alpine Linux
+     - debian        : Debian, Ubuntu, or any distro with ID_LIKE=debian
+     - linux         : other mutable Linux (generic fallback) */ -}}
+{{- $linuxVariant := "" -}}
+{{- if eq .chezmoi.os "linux" -}}
+{{-   $osID := .chezmoi.osRelease.id | default "" -}}
+{{-   $osIDLike := .chezmoi.osRelease.idLike | default "" -}}
+{{-   if and (eq $osID "fedora") (stat "/run/ostree-booted") -}}
+{{-     $linuxVariant = "fedora-atomic" -}}
+{{-   else if eq $osID "alpine" -}}
+{{-     $linuxVariant = "alpine" -}}
+{{-   else if or (eq $osID "debian") (eq $osID "ubuntu") (contains "debian" $osIDLike) -}}
+{{-     $linuxVariant = "debian" -}}
+{{-   else -}}
+{{-     $linuxVariant = "linux" -}}
+{{-   end -}}
+{{- end -}}
+
 [data]
     name = {{ $name | quote }}
     email = {{ $email | quote }}
+    linuxVariant = {{ $linuxVariant | quote }}

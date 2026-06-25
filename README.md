@@ -1,8 +1,8 @@
 # jfkfiles
 
 Reproducible machine setup — **easily change my computer**. Lightweight stack
-(chezmoi + Brewfile + macOS scripts), architected to keep the **host minimal** so
-it ports cleanly to an immutable Linux host (Bluefin/Silverblue) later.
+(chezmoi + Brewfile + distro-aware scripts), architected to keep the **host minimal**
+so it ports cleanly to any OS.
 
 ## Design principle
 The host carries only **GUI apps + shell + container runtime**. Every dev
@@ -10,10 +10,11 @@ toolchain (embedded, python, node, …) lives in a **devcontainer**. That is wha
 makes this immutable-OS-friendly.
 
 ```
-Host (macOS)         home/Brewfile         + scripts/macos-*.sh
-Host (Fedora Atomic) image/Containerfile   shell tools baked into a custom base image
-Dotfiles (chezmoi)   home/dot_*            portable via {{ .chezmoi.os }} guards
-Dev (devcontainers)  (planned)             toolchains + dotfiles injected (Linux: 100% of dev)
+Host (macOS)              home/Brewfile            + scripts/macos-*.sh
+Host (Fedora Atomic)      image/Containerfile      shell tools baked into a custom base image
+Host (Alpine/Deb/Ubuntu)  chezmoi run_once_before  tools installed automatically at apply time
+Dotfiles (chezmoi)        home/dot_*               portable via .data.linuxVariant guards
+Dev (devcontainers)       (planned)                toolchains + dotfiles injected
 ```
 
 ## Layout
@@ -22,15 +23,30 @@ Dev (devcontainers)  (planned)             toolchains + dotfiles injected (Linux
 | `home/` | chezmoi-managed `$HOME` tree (`.chezmoiroot` points here) |
 | `home/Brewfile` | **your tool list** — formulae, casks, VS Code ext, npm globals |
 | `home/dot_zshrc.tmpl`, `dot_gitconfig.tmpl` | templated dotfiles |
-| `home/.chezmoi.toml.tmpl` | `chezmoi init` prompts (name/email) → template data |
+| `home/.chezmoi.toml.tmpl` | `chezmoi init` prompts + `linuxVariant` detection |
 | `home/.chezmoiignore` | repo/dev artifacts chezmoi must not apply to `$HOME` |
-| `home/.chezmoiscripts/` | install oh-my-zsh (once) → `brew bundle` on Brewfile change (macOS) / set zsh login shell (Linux) |
+| `home/.chezmoiscripts/run_once_before_05` | install oh-my-zsh (all platforms) |
+| `home/.chezmoiscripts/run_once_before_10` | install shell tools (Alpine / Debian / Ubuntu only) |
+| `home/.chezmoiscripts/run_onchange_after_20` | `brew bundle` on Brewfile change (macOS) |
+| `home/.chezmoiscripts/run_onchange_after_30` | set zsh login shell (Linux) |
 | `image/Containerfile` | custom Fedora Sway Atomic image — host shell tools baked in |
 | `image/README.md` | how to build, publish, and rebase onto the custom image |
 | `.github/workflows/build-image.yml` | CI: rebuild + push the image (push to `image/**`, manual, weekly) |
 | `scripts/bootstrap.sh` | one-command new-machine setup |
+| `install.sh` | devpod entry point — delegates to `scripts/bootstrap.sh` |
 | `scripts/macos-defaults.sh` | curated, idempotent macOS settings |
 | `scripts/macos-export-domains.sh` | snapshot app prefs to `packages/macos/` (gitignored) |
+
+## Linux variants
+
+| Variant | Tool install strategy | Command |
+|---------|----------------------|---------|
+| **Fedora Sway Atomic** | Tools baked into custom OCI image (immutable root) | Rebase first — see `image/README.md`; then run bootstrap |
+| **Alpine** | oh-my-zsh via `run_once_before_05`, then `apk` + static binaries (starship) via `run_once_before_10` | `bash scripts/bootstrap.sh` |
+| **Debian / Ubuntu** | oh-my-zsh via `run_once_before_05`, then `apt-get` + upstream repos (eza, starship) via `run_once_before_10` | `bash scripts/bootstrap.sh` |
+
+The `linuxVariant` template variable (set in `.chezmoi.toml.tmpl`) flows through
+all chezmoi scripts so each distro path is handled explicitly.
 
 ## First-time publish (from this dev repo)
 ```sh
@@ -43,8 +59,9 @@ gh repo create kohlerj/jfkfiles --private --source=. --push   # or your remote
 ```sh
 sh -c "$(curl -fsLS raw.githubusercontent.com/kohlerj/jfkfiles/main/scripts/bootstrap.sh)"
 ```
-This installs Homebrew + chezmoi, runs `chezmoi init --apply` (clones to
-`~/.local/share/chezmoi`, applies dotfiles, and runs `brew bundle`).
+This installs the required package manager / chezmoi, then runs `chezmoi init --apply`
+(clones to `~/.local/share/chezmoi`, installs oh-my-zsh, installs shell tools for your distro,
+applies dotfiles, and runs `brew bundle` on macOS).
 
 ## Day-to-day
 ```sh
