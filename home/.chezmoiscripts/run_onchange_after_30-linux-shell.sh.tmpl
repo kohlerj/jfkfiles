@@ -3,12 +3,25 @@
 # On Fedora Atomic, zsh is in the custom OCI image.
 # On Alpine/Debian/Ubuntu, zsh was installed by run_once_before_10.
 # Re-run trigger (bump to force): v3
+{{ $linuxVariant := dig "data" "linuxVariant" "" . -}}
+{{- if and (eq .chezmoi.os "linux") (eq $linuxVariant "") -}}
+{{-   $osID := index .chezmoi.osRelease "id" | default "" -}}
+{{-   if and (eq $osID "fedora") (stat "/run/ostree-booted") -}}
+{{-     $linuxVariant = "fedora-atomic" -}}
+{{-   else if eq $osID "alpine" -}}
+{{-     $linuxVariant = "alpine" -}}
+{{-   else if or (eq $osID "debian") (eq $osID "ubuntu") -}}
+{{-     $linuxVariant = "debian" -}}
+{{-   else -}}
+{{-     $linuxVariant = "linux" -}}
+{{-   end -}}
+{{- end -}}
 {{ if eq .chezmoi.os "linux" -}}
 set -eu
 
 ZSH_BIN="$(command -v zsh || true)"
 if [ -z "$ZSH_BIN" ]; then
-{{ if eq .data.linuxVariant "fedora-atomic" -}}
+{{ if eq $linuxVariant "fedora-atomic" -}}
     echo "zsh not found. Rebase onto the custom image (image/Containerfile) first," >&2
     echo "or layer it: rpm-ostree install zsh && reboot." >&2
 {{ else -}}

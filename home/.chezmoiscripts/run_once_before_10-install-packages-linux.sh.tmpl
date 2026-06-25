@@ -4,10 +4,23 @@
 # nothing is installed here.
 # macOS: handled by Homebrew + Brewfile; nothing is installed here.
 # Re-run trigger (bump to force): v1
+{{- $linuxVariant := dig "data" "linuxVariant" "" . -}}
+{{- if and (eq .chezmoi.os "linux") (eq $linuxVariant "") -}}
+{{-   $osID := index .chezmoi.osRelease "id" | default "" -}}
+{{-   if and (eq $osID "fedora") (stat "/run/ostree-booted") -}}
+{{-     $linuxVariant = "fedora-atomic" -}}
+{{-   else if eq $osID "alpine" -}}
+{{-     $linuxVariant = "alpine" -}}
+{{-   else if or (eq $osID "debian") (eq $osID "ubuntu") -}}
+{{-     $linuxVariant = "debian" -}}
+{{-   else -}}
+{{-     $linuxVariant = "linux" -}}
+{{-   end -}}
+{{- end -}}
 {{ if eq .chezmoi.os "linux" -}}
-{{ if eq .data.linuxVariant "fedora-atomic" -}}
+{{ if eq $linuxVariant "fedora-atomic" -}}
 echo "Fedora Atomic: tools are in the custom OCI image — skipping package install."
-{{ else if eq .data.linuxVariant "alpine" -}}
+{{ else if eq $linuxVariant "alpine" -}}
 set -eu
 
 echo "==> Alpine: installing shell tools via apk"
@@ -42,7 +55,7 @@ if ! command -v gh >/dev/null 2>&1; then
         echo "   gh CLI not available in this Alpine repo; install manually if needed."
 fi
 
-{{ else if eq .data.linuxVariant "debian" -}}
+{{ else if eq $linuxVariant "debian" -}}
 set -eu
 
 echo "==> Debian/Ubuntu: installing shell tools via apt-get"
@@ -86,7 +99,7 @@ if ! command -v starship >/dev/null 2>&1; then
 fi
 
 {{ else -}}
-echo "Unknown Linux variant ({{ .data.linuxVariant }}): skipping automatic package install."
+echo "Unknown Linux variant ({{ $linuxVariant }}): skipping automatic package install."
 echo "Install zsh, eza, fzf, tmux, bat, fd, zoxide, neovim, starship manually."
 {{ end -}}
 {{ else -}}
