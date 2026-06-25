@@ -29,7 +29,7 @@ export _FZF_PREVIEW_CMD='bat --color=always --style=plain,numbers --line-range=:
 export FZF_CTRL_T_OPTS="--preview '$_FZF_PREVIEW_CMD'"
 
 # Plugins ('macos' only loaded on Darwin so config stays Linux-portable)
-plugins=(git python pyenv virtualenv dotenv zoxide fzf colorize tmux eza{{ if eq .chezmoi.os "darwin" }} macos{{ end }})
+plugins=(git python pyenv virtualenv dotenv zoxide colorize tmux eza{{ if eq .chezmoi.os "darwin" }} macos{{ end }})
 
 [ -f "$ZSH/oh-my-zsh.sh" ] && source "$ZSH/oh-my-zsh.sh"
 
@@ -52,3 +52,4 @@ export PATH="$HOME/.local/bin:$PATH"
 {{ end -}}
 
 command -v starship >/dev/null 2>&1 && eval "$(starship init zsh)"
+command -v fzf >/dev/null 2>&1 && eval "$(fzf --zsh)"
