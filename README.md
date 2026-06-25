@@ -42,8 +42,8 @@ Dev (devcontainers)       (planned)                toolchains + dotfiles injecte
 | Variant | Tool install strategy | Command |
 |---------|----------------------|---------|
 | **Fedora Sway Atomic** | Tools baked into custom OCI image (immutable root) | Rebase first — see `image/README.md`; then run bootstrap |
-| **Alpine** | `apk` + static binaries (starship) via `run_once_before_10` | `bash scripts/bootstrap.sh` |
-| **Debian / Ubuntu** | `apt-get` + upstream repos (eza, starship) via `run_once_before_10` | `bash scripts/bootstrap.sh` |
+| **Alpine** | oh-my-zsh via `run_once_before_05`, then `apk` + static binaries (starship) via `run_once_before_10` | `bash scripts/bootstrap.sh` |
+| **Debian / Ubuntu** | oh-my-zsh via `run_once_before_05`, then `apt-get` + upstream repos (eza, starship) via `run_once_before_10` | `bash scripts/bootstrap.sh` |
 
 The `linuxVariant` template variable (set in `.chezmoi.toml.tmpl`) flows through
 all chezmoi scripts so each distro path is handled explicitly.
@@ -60,8 +60,8 @@ gh repo create kohlerj/jfkfiles --private --source=. --push   # or your remote
 sh -c "$(curl -fsLS raw.githubusercontent.com/kohlerj/jfkfiles/main/scripts/bootstrap.sh)"
 ```
 This installs the required package manager / chezmoi, then runs `chezmoi init --apply`
-(clones to `~/.local/share/chezmoi`, applies dotfiles, installs shell tools for your distro,
-and runs `brew bundle` on macOS).
+(clones to `~/.local/share/chezmoi`, installs oh-my-zsh, installs shell tools for your distro,
+applies dotfiles, and runs `brew bundle` on macOS).
 
 ## Day-to-day
 ```sh
