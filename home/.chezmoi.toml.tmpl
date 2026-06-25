@@ -11,8 +11,8 @@
      - linux         : other mutable Linux (generic fallback) */ -}}
 {{- $linuxVariant := "" -}}
 {{- if eq .chezmoi.os "linux" -}}
-{{-   $osID := .chezmoi.osRelease.id | default "" -}}
-{{-   $osIDLike := .chezmoi.osRelease.idLike | default "" -}}
+{{-   $osID := index .chezmoi.osRelease "id" | default "" -}}
+{{-   $osIDLike := index .chezmoi.osRelease "idLike" | default "" -}}
 {{-   if and (eq $osID "fedora") (stat "/run/ostree-booted") -}}
 {{-     $linuxVariant = "fedora-atomic" -}}
 {{-   else if eq $osID "alpine" -}}

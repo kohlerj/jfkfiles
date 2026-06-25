@@ -7,7 +7,7 @@
 # Run on a NEW machine:
 #   sh -c "$(curl -fsLS raw.githubusercontent.com/kohlerj/jfkfiles/main/scripts/bootstrap.sh)"
 # or, with the repo cloned:  bash scripts/bootstrap.sh
-set -euo pipefail
+set -eu
 
 REPO="${JFKFILES_REPO:-https://github.com/kohlerj/jfkfiles}"
 OS="$(uname)"
