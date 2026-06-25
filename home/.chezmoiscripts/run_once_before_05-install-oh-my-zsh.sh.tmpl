@@ -5,12 +5,12 @@ set -eu
 
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
 {{ if eq .chezmoi.os "linux" -}}
-{{ if eq .data.linuxVariant "alpine" -}}
+{{ if eq (index (index . "data" | default dict) "linuxVariant" | default "") "alpine" -}}
     if ! command -v curl >/dev/null 2>&1 || ! command -v git >/dev/null 2>&1; then
         echo "==> Installing prerequisites for oh-my-zsh (curl, git)"
         sudo apk add --no-cache curl git
     fi
-{{ else if eq .data.linuxVariant "debian" -}}
+{{ else if eq (index (index . "data" | default dict) "linuxVariant" | default "") "debian" -}}
     if ! command -v curl >/dev/null 2>&1 || ! command -v git >/dev/null 2>&1; then
         echo "==> Installing prerequisites for oh-my-zsh (curl, git)"
         sudo apt-get update -qq
