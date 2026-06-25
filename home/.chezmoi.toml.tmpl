@@ -7,17 +7,16 @@
      Values: "fedora-atomic" | "alpine" | "debian" | "linux" (generic) | "" (macOS)
      - fedora-atomic : Fedora with rpm-ostree present (immutable root → tools baked in OCI image)
      - alpine        : Alpine Linux
-     - debian        : Debian, Ubuntu, or any distro with ID_LIKE=debian
+     - debian        : Debian or Ubuntu
      - linux         : other mutable Linux (generic fallback) */ -}}
 {{- $linuxVariant := "" -}}
 {{- if eq .chezmoi.os "linux" -}}
 {{-   $osID := index .chezmoi.osRelease "id" | default "" -}}
-{{-   $osIDLike := index .chezmoi.osRelease "idLike" | default "" -}}
 {{-   if and (eq $osID "fedora") (stat "/run/ostree-booted") -}}
 {{-     $linuxVariant = "fedora-atomic" -}}
 {{-   else if eq $osID "alpine" -}}
 {{-     $linuxVariant = "alpine" -}}
-{{-   else if or (eq $osID "debian") (eq $osID "ubuntu") (contains "debian" $osIDLike) -}}
+{{-   else if or (eq $osID "debian") (eq $osID "ubuntu") -}}
 {{-     $linuxVariant = "debian" -}}
 {{-   else -}}
 {{-     $linuxVariant = "linux" -}}
