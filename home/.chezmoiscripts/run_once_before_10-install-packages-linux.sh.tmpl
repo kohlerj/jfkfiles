@@ -1,0 +1,94 @@
+#!/bin/sh
+# Install shell tools on mutable Linux distros (Alpine, Debian/Ubuntu).
+# Fedora Sway Atomic: tools are baked into the custom OCI image (image/Containerfile);
+# nothing is installed here.
+# macOS: handled by Homebrew + Brewfile; nothing is installed here.
+# Re-run trigger (bump to force): v1
+{{ if eq .chezmoi.os "linux" -}}
+{{ if eq .data.linuxVariant "fedora-atomic" -}}
+echo "Fedora Atomic: tools are in the custom OCI image — skipping package install."
+{{ else if eq .data.linuxVariant "alpine" -}}
+set -eu
+
+echo "==> Alpine: installing shell tools via apk"
+sudo apk update
+sudo apk add --no-cache \
+    zsh \
+    fzf \
+    tmux \
+    bat \
+    fd \
+    zoxide \
+    neovim \
+    git \
+    git-lfs \
+    wget \
+    curl \
+    bash \
+    eza
+
+# starship — not in Alpine repos yet; use the static binary installer
+if ! command -v starship >/dev/null 2>&1; then
+    echo "==> Installing starship (static binary)"
+    curl -fsSL https://starship.rs/install.sh | sh -s -- --yes --bin-dir "$HOME/.local/bin"
+fi
+
+# gh CLI — not in Alpine base repos; install via the official apk repo
+if ! command -v gh >/dev/null 2>&1; then
+    echo "==> Installing GitHub CLI"
+    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+        | sudo tee /etc/apk/keys/githubcli-archive-keyring.gpg >/dev/null 2>&1 || true
+    sudo apk add --no-cache gh 2>/dev/null || \
+        echo "   gh CLI not available in this Alpine repo; install manually if needed."
+fi
+
+{{ else if eq .data.linuxVariant "debian" -}}
+set -eu
+
+echo "==> Debian/Ubuntu: installing shell tools via apt-get"
+sudo apt-get update -qq
+sudo apt-get install -y --no-install-recommends \
+    zsh \
+    fzf \
+    tmux \
+    bat \
+    fd-find \
+    zoxide \
+    neovim \
+    git \
+    git-lfs \
+    wget \
+    curl \
+    gh
+
+# fd-find installs as `fdfind`; alias to `fd` in ~/.local/bin
+mkdir -p "$HOME/.local/bin"
+if command -v fdfind >/dev/null 2>&1 && ! command -v fd >/dev/null 2>&1; then
+    ln -sf "$(command -v fdfind)" "$HOME/.local/bin/fd"
+fi
+
+# eza — not in Debian/Ubuntu base repos yet; install via the official deb
+if ! command -v eza >/dev/null 2>&1; then
+    echo "==> Installing eza"
+    sudo mkdir -p /etc/apt/keyrings
+    wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc \
+        | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg 2>/dev/null
+    echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" \
+        | sudo tee /etc/apt/sources.list.d/gierens.list >/dev/null
+    sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
+    sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends eza
+fi
+
+# starship — not in Debian/Ubuntu repos; use the static binary installer
+if ! command -v starship >/dev/null 2>&1; then
+    echo "==> Installing starship (static binary)"
+    curl -fsSL https://starship.rs/install.sh | sh -s -- --yes --bin-dir "$HOME/.local/bin"
+fi
+
+{{ else -}}
+echo "Unknown Linux variant ({{ .data.linuxVariant }}): skipping automatic package install."
+echo "Install zsh, eza, fzf, tmux, bat, fd, zoxide, neovim, starship manually."
+{{ end -}}
+{{ else -}}
+echo "macOS: packages handled by Brewfile — skipping Linux install script."
+{{ end -}}

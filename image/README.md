@@ -5,6 +5,10 @@ starship, …) and the devcontainer runner (devpod; podman already ships) into a
 custom base image. This is the declarative, immutable, "based on config" way —
 the host stays reproducible and you never `rpm-ostree install` by hand.
 
+> **Other Linux distros (Alpine, Debian, Ubuntu):** tools are installed automatically
+> by chezmoi's `run_once_before_10` script when you run `bash scripts/bootstrap.sh`.
+> No custom image is needed for mutable distros.
+
 Dev toolchains are **not** here — those live in devcontainers (see `../devcontainer`).
 
 ## What's where
@@ -31,8 +35,10 @@ sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/kohlerj/sway-atomic:la
 systemctl reboot
 ```
 
-After reboot the tools are present on the host. chezmoi then only applies your
-dotfiles and sets zsh as the login shell (`home/.chezmoiscripts/…linux-shell…`).
+After reboot the tools are present on the host. Then run bootstrap to apply dotfiles:
+```sh
+bash scripts/bootstrap.sh
+```
 
 ## Local test without rebasing
 ```sh
