@@ -52,4 +52,23 @@ export PATH="$HOME/.local/bin:$PATH"
 {{ end -}}
 
 command -v starship >/dev/null 2>&1 && eval "$(starship init zsh)"
-command -v fzf >/dev/null 2>&1 && eval "$(fzf --zsh)"
+
+# FZF shell integration (key bindings + completion)
+# fzf --zsh requires 0.48+; fall back to distro/brew shell files on older versions
+if (( $+commands[fzf] )); then
+  if fzf --zsh &>/dev/null; then
+    eval "$(fzf --zsh)"
+  else
+    for _fzf_shell in \
+      "${HOMEBREW_PREFIX}/opt/fzf/shell" \
+      "/usr/share/doc/fzf/examples" \
+      "/usr/share/fzf"; do
+      if [[ -d "$_fzf_shell" ]]; then
+        [[ -f "$_fzf_shell/completion.zsh" ]] && source "$_fzf_shell/completion.zsh" 2>/dev/null
+        [[ -f "$_fzf_shell/key-bindings.zsh" ]] && source "$_fzf_shell/key-bindings.zsh"
+        break
+      fi
+    done
+    unset _fzf_shell
+  fi
+fi
