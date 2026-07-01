@@ -1,0 +1,17 @@
+{
+  "renderMarkdown": true,
+  "screenReader": false,
+  "theme": "auto",
+  "model": "auto",
+  "voice": {
+    "enabled": true,
+    "selectedModel": "nemotron-3.5-asr-streaming-0.6b-generic-cpu:3"
+  },
+  "footer": {
+    "showAgent": true,
+    "showAiUsed": true,
+    "showContextWindow": true,
+    "showModelEffort": true,
+    "showQuota": true
+  }
+}

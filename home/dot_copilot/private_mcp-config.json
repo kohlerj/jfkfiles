@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "pcbparts": {
+      "type": "http",
+      "url": "https://pcbparts.dev/mcp",
+      "headers": {},
+      "tools": [
+        "*"
+      ]
+    }
+  }
+}
